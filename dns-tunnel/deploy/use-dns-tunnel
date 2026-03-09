@@ -1,0 +1,30 @@
+#!/bin/bash
+# Switch the active DNS tunnel to our custom multi-resolver server.
+# Usage: sudo use-dns-tunnel
+
+set -euo pipefail
+
+echo "[*] Stopping Slipstream (if running)..."
+dnstm router stop 2>/dev/null || true
+dnstm tunnel stop --tag slip1 2>/dev/null || true
+
+echo "[*] Stopping DNSTT (if running)..."
+systemctl stop dnstt-server 2>/dev/null || true
+
+echo "[*] Removing old iptables rules for port 53..."
+# Remove all existing PREROUTING redirects on port 53 (udp and tcp)
+iptables -t nat -D PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300 2>/dev/null || true
+iptables -t nat -D PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 5300 2>/dev/null || true
+
+echo "[*] Adding iptables rules: 53 → 5300 (UDP + TCP)..."
+iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300
+iptables -t nat -I PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 5300
+
+echo "[*] Starting dns-tunnel server..."
+systemctl start dns-tunnel
+
+echo ""
+echo "[+] Switched to dns-tunnel"
+echo "    Listening on      : 0.0.0.0:5300"
+echo "    iptables redirect : UDP+TCP :53 → :5300"
+echo "    Logs              : journalctl -u dns-tunnel -f"

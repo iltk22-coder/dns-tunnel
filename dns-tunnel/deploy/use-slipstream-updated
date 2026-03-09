@@ -1,0 +1,21 @@
+#!/bin/bash
+# Обновлённый скрипт переключения на Slipstream.
+# Заменяет /usr/local/bin/use-slipstream на сервере.
+
+set -euo pipefail
+
+echo "[*] Stopping dns-tunnel (if running)..."
+systemctl stop dns-tunnel 2>/dev/null || true
+
+echo "[*] Stopping DNSTT (if running)..."
+systemctl stop dnstt-server 2>/dev/null || true
+
+echo "[*] Removing iptables redirect 53 → 5300 (UDP + TCP)..."
+iptables -t nat -D PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300 2>/dev/null || true
+iptables -t nat -D PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 5300 2>/dev/null || true
+
+echo "[*] Starting Slipstream..."
+dnstm tunnel start --tag slip1
+dnstm router start
+
+echo "[+] Switched to Slipstream"

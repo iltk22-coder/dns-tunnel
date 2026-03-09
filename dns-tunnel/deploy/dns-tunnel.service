@@ -1,0 +1,21 @@
+[Unit]
+Description=DNS Tunnel Server
+After=network.target
+Documentation=https://github.com/your/dns-tunnel
+
+[Service]
+Type=simple
+User=root
+ExecStart=/opt/dns-tunnel/server -config /opt/dns-tunnel/server.yaml
+Restart=on-failure
+RestartSec=5s
+# Give it time to bind port 5300 and set up sessions.
+TimeoutStopSec=10s
+
+# Logging: journalctl -u dns-tunnel -f
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=dns-tunnel
+
+[Install]
+WantedBy=multi-user.target

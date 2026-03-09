@@ -1,0 +1,27 @@
+# DNS Tunnel — Client Configuration
+
+# Local SOCKS5 proxy address.
+# Point your browser to: SOCKS5  127.0.0.1:1080
+listen: "127.0.0.1:1080"
+
+# Must match the server's `domain` value.
+domain: "tunnel.site-tob.online"
+
+# List of DNS resolvers to distribute connections across.
+# Each new SOCKS5 connection is assigned to the next healthy resolver
+# in round-robin order.  Add or remove entries freely.
+#
+# Format: "ip:port"  (port is almost always 53)
+resolvers:
+  - "8.8.8.8:53"       # Google Primary
+  - "8.8.4.4:53"       # Google Secondary
+  - "1.1.1.1:53"       # Cloudflare Primary
+  - "1.0.0.1:53"       # Cloudflare Secondary
+  - "9.9.9.9:53"       # Quad9
+
+# Tips:
+#  - You can add your own resolvers (e.g. local ISP resolver if it's not
+#    blocked, or a resolver running on another machine you control).
+#  - Resolvers that fail 3 queries in a row are put into a 30-second
+#    cool-down before being tried again.
+#  - Latency per resolver is logged so you can identify slow ones.

@@ -1,0 +1,24 @@
+#!/bin/bash
+# Обновлённый скрипт переключения на DNSTT.
+# Заменяет /usr/local/bin/use-dnstt на сервере.
+
+set -euo pipefail
+
+echo "[*] Stopping dns-tunnel (if running)..."
+systemctl stop dns-tunnel 2>/dev/null || true
+
+echo "[*] Stopping Slipstream (if running)..."
+dnstm router stop 2>/dev/null || true
+dnstm tunnel stop --tag slip1 2>/dev/null || true
+
+echo "[*] Removing old iptables rules..."
+iptables -t nat -D PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300 2>/dev/null || true
+iptables -t nat -D PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 5300 2>/dev/null || true
+
+echo "[*] Adding iptables redirect: UDP :53 → :5300..."
+iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300
+
+echo "[*] Starting DNSTT..."
+systemctl start dnstt-server
+
+echo "[+] Switched to DNSTT"

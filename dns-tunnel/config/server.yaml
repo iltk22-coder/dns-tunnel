@@ -1,0 +1,20 @@
+# DNS Tunnel — Server Configuration
+# Upload this file alongside the `server` binary to /opt/dns-tunnel/
+
+# Address and port the DNS server listens on.
+# We use port 5300 (same as DNSTT) so that the shared iptables rule
+#   iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300
+# forwards incoming DNS traffic to us.
+listen: "0.0.0.0:5300"
+
+# Authoritative zone — must match your NS records.
+domain: "tunnel.site-tob.online"
+
+# Public IP of this server (used for ns1/ns2 glue A records).
+server_ip: "138.124.3.221"
+
+# Timeout when dialling the upstream target (e.g. example.com:443).
+dial_timeout: "10s"
+
+# Sessions idle longer than this are cleaned up automatically.
+session_ttl: "5m"
